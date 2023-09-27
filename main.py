@@ -15,26 +15,6 @@ import time
 import logging
 import pdfkit
 
-# Weeks = {
-#     "1": ["2022-08-30","2022-09-06"],
-#     "2": ["2022-09-06","2022-09-13"],
-#     "3": ["2022-09-13","2022-09-20"],
-#     "4": ["2022-09-20","2022-09-27"],
-#     "5": ["2022-09-27","2022-10-04"],
-#     "6": ["2022-10-04","2022-10-11"],
-#     "7": ["2022-10-11","2022-10-18"],
-#     "8": ["2022-10-18","2022-10-25"],
-#     "9": ["2022-10-25","2022-11-01"],
-#     "10": ["2022-11-01","2022-11-08"],
-#     "11": ["2022-11-08","2022-11-15"],
-#     "12": ["2022-11-15","2022-11-22"],
-#     "13": ["2022-11-22","2022-11-29"],
-#     "14": ["2022-11-29","2022-12-06"],
-#     "15": ["2022-12-06","2022-12-13"],
-#     "15": ["2022-12-13","2022-12-20"],
-#     "16": ["2022-12-20","2022-12-27"],
-#     "17": ["2022-12-28","2023-01-3"]
-# }
 
 Weeks = {
     # Wednesday - Wednesday - Sunday
@@ -664,69 +644,69 @@ def main(swid, espn_s2, league_id, week):
     week = league.current_week - 1
     print("week: ", week)
     # Worst Win
-    # worstWin(league, week)
-    # # Worst Loss
-    # worstLoss(league, week)
-    #
-    # # Biggest Blowout
-    # biggestBlowOut(league, week)
-    #
-    # # Closest Game
-    # closestGame(league, week)
-    #
-    # # Best and Worst Manager
-    # manager_eff = manager_effiency(league, week)
-    # prettyPrintManagerEff(manager_eff)
-    #
-    # # Top Heavy
-    # topHeavyList = topHeavyTeams(league, week)
-    # prettyPrintTopHeavy(topHeavyList)
-    #
-    # # Everyone was hitting
-    # hitters = highestTeamAverageForStarters(league, week)
-    # prettyPrintHitters(hitters)
-    #
-    # qbWarmers = biggestBenchWarmer(league, week, "QB")
-    # rbWarmers = biggestBenchWarmer(league, week, "RB")
-    # teWarmers = biggestBenchWarmer(league, week, "TE")
-    # wrWarmers = biggestBenchWarmer(league, week, "WR")
-    #
-    # allWarmers = qbWarmers + rbWarmers + teWarmers + wrWarmers
-    # allWarmers = sorted(allWarmers, key=lambda tup: tup[0], reverse=True)
-    # prettyPrintBenchWarmers(allWarmers[:5])
-    # prettyPrintTopScorers(topPlayers(league, week)[:5])
-    #
-    # standings(league, week)
-    # divison_strength(league, week)
-    #
-    # table = PrettyTable()
-    # table.title = "Schedule Swap"
-    # table.hrules = True
-    # team_name_header = [" "]
-    # for i in range(len(league.teams)):
-    #     team_name_header.append(league.teams[i].team_name)
-    # # print("team_name_header: ", team_name_header)
-    #
-    # table.field_names = team_name_header
-    #
-    # big_d = scheduleSwap(league)
-    # # Iterate through all the team
-    # for t1 in range(len(league.teams)):
-    #     sched = []
-    #     # Iterate through the headers of the table
-    #     for t2 in table.field_names:
-    #         # If the header is empty (first col), append t1 name
-    #         if t2 == " ":
-    #             sched.append(league.teams[t1].team_name)
-    #         # Else append the lookup of [t1][t1], create each row
-    #         else:
-    #             record = big_d[league.teams[t1].team_name][t2]
-    #             y = "{0}-{1}-{2}".format(record[0], record[1], record[2])
-    #             sched.append(y)
-    #     # Add the row
-    #     table.add_row(sched)
-    # # print(big_d)
-    # print(table)
+    worstWin(league, week)
+    # Worst Loss
+    worstLoss(league, week)
+
+    # Biggest Blowout
+    biggestBlowOut(league, week)
+
+    # Closest Game
+    closestGame(league, week)
+
+    # Best and Worst Manager
+    manager_eff = manager_effiency(league, week)
+    prettyPrintManagerEff(manager_eff)
+
+    # Top Heavy
+    topHeavyList = topHeavyTeams(league, week)
+    prettyPrintTopHeavy(topHeavyList)
+
+    # Everyone was hitting
+    hitters = highestTeamAverageForStarters(league, week)
+    prettyPrintHitters(hitters)
+
+    qbWarmers = biggestBenchWarmer(league, week, "QB")
+    rbWarmers = biggestBenchWarmer(league, week, "RB")
+    teWarmers = biggestBenchWarmer(league, week, "TE")
+    wrWarmers = biggestBenchWarmer(league, week, "WR")
+
+    allWarmers = qbWarmers + rbWarmers + teWarmers + wrWarmers
+    allWarmers = sorted(allWarmers, key=lambda tup: tup[0], reverse=True)
+    prettyPrintBenchWarmers(allWarmers[:5])
+    prettyPrintTopScorers(topPlayers(league, week)[:5])
+
+    standings(league, week)
+    divison_strength(league, week)
+
+    table = PrettyTable()
+    table.title = "Schedule Swap"
+    table.hrules = True
+    team_name_header = [" "]
+    for i in range(len(league.teams)):
+        team_name_header.append(league.teams[i].team_name)
+    # print("team_name_header: ", team_name_header)
+
+    table.field_names = team_name_header
+
+    big_d = scheduleSwap(league)
+    # Iterate through all the team
+    for t1 in range(len(league.teams)):
+        sched = []
+        # Iterate through the headers of the table
+        for t2 in table.field_names:
+            # If the header is empty (first col), append t1 name
+            if t2 == " ":
+                sched.append(league.teams[t1].team_name)
+            # Else append the lookup of [t1][t1], create each row
+            else:
+                record = big_d[league.teams[t1].team_name][t2]
+                y = "{0}-{1}-{2}".format(record[0], record[1], record[2])
+                sched.append(y)
+        # Add the row
+        table.add_row(sched)
+    # print(big_d)
+    print(table)
 
     for trade in GetTradeActivities(league):
 
