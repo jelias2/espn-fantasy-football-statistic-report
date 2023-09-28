@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Module Docstring
+This is a module to compute fantasy football statistics
 """
 __author__ = "Jacob Elias"
 __version__ = "0.1.0"
