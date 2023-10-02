@@ -223,23 +223,29 @@ def topPlayers(league, week):
 
 
 def prettyPrintBenchWarmers(benchWarmers):
+    benchWarmersOut = []
     x = PrettyTable()
     x.field_names = ["Points", "Player", "Team"]
     x.title = 'Biggest Benchwarmers'
     for _, warmer in enumerate(benchWarmers):
         x.add_row([warmer[0], warmer[1], warmer[3]])
+        benchWarmersOut.append([warmer[0], warmer[1], warmer[3]])
     print(x)
     print("  ")
+    return benchWarmersOut
 
 
 def prettyPrintTopScorers(benchWarmers):
+    topScorers = []
     x = PrettyTable()
     x.field_names = ["Points", "Player", "Team"]
     x.title = "Top Scorers"
     for _, warmer in enumerate(benchWarmers):
         x.add_row([warmer[0], warmer[1], warmer[3]])
+        topScorers.append([warmer[0], warmer[1], warmer[3]])
     print(x)
     print("  ")
+    return topScorers
 
 # ### Total Points Played / Best Possible Points
 
@@ -721,7 +727,7 @@ def main(swid, espn_s2, league_id, week):
     ############# Final Output #################################
 
     weeksOutput = {"weeks": []}
-    current_week = league.current_week - 1
+    current_week = league.current_week
     for week in range(1, current_week):
         jsonWeek = {}
         print("week: ", week)
@@ -757,15 +763,18 @@ def main(swid, espn_s2, league_id, week):
         wholeTeamDict = prettyPrintHitters(hitters)
         jsonWeek['wholeTeam'] = wholeTeamDict
 
-        # qbWarmers=biggestBenchWarmer(league, week, "QB")
-        # rbWarmers=biggestBenchWarmer(league, week, "RB")
-        # teWarmers=biggestBenchWarmer(league, week, "TE")
-        # wrWarmers=biggestBenchWarmer(league, week, "WR")
-        #
-        # allWarmers=qbWarmers + rbWarmers + teWarmers + wrWarmers
-        # allWarmers=sorted(allWarmers, key=lambda tup: tup[0], reverse=True)
-        # prettyPrintBenchWarmers(allWarmers[:5])
-        # prettyPrintTopScorers(topPlayers(league, week)[:5])
+        qbWarmers = biggestBenchWarmer(league, week, "QB")
+        rbWarmers = biggestBenchWarmer(league, week, "RB")
+        teWarmers = biggestBenchWarmer(league, week, "TE")
+        wrWarmers = biggestBenchWarmer(league, week, "WR")
+
+        allWarmers = qbWarmers + rbWarmers + teWarmers + wrWarmers
+        allWarmers = sorted(allWarmers, key=lambda tup: tup[0], reverse=True)
+        # print("All Warmers: ", allWarmers)
+        benchWarmers = prettyPrintBenchWarmers(allWarmers[:5])
+        jsonWeek["benchWarmers"] = benchWarmers
+        topScorers = prettyPrintTopScorers(topPlayers(league, week)[:5])
+        jsonWeek["topScorers"] = topScorers
 
         weeksOutput["weeks"].append(jsonWeek)
         print("Printing JSON Week")
@@ -773,7 +782,7 @@ def main(swid, espn_s2, league_id, week):
         print(weeksStr)
         print("Printed JSON Week")
 
-    print(weeks)
+    # print(weeks)
 
     standings(league, week)
     divison_strength(league, week)
