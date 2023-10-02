@@ -328,7 +328,15 @@ def prettyPrintManagerEff(manager_eff):
         fraction = "{0:.0f}/{1:.0f}".format(manager[1], manager[2])
         percentage = "{0:.0f}".format(manager[3] * 100)
         x.add_row([manager[0], fraction, percentage])
-        galaxyManager["msg"] = manager[0] + " " + fraction + " " + percentage
+        # galaxyManager["msg"] = manager[0] + " " + fraction + " " + percentage
+        galaxyManager = {
+            "r1c1": "Team",
+            "r1c2": "Output/Optimal",
+            "r1c3": "% Accuracy",
+            "r2c1": manager[0],
+            "r2c2": fraction,
+            "r2c3": percentage,
+        }
     print(x)
 
     y = PrettyTable()
@@ -341,8 +349,16 @@ def prettyPrintManagerEff(manager_eff):
         fraction = "{0:.0f}/{1:.0f}".format(manager[1], manager[2])
         percentage = "{0:.0f}".format(manager[3] * 100)
         y.add_row([manager[0], fraction, percentage])
-        mikeZimmerManager["msg"] = manager[0] + \
-            " " + fraction + " " + percentage
+        # mikeZimmerManager["msg"] = manager[0] + \
+        # " " + fraction + " " + percentage
+        mikeZimmerManager = {
+            "r1c1": "Team",
+            "r1c2": "Output/Optimal",
+            "r1c3": "% Accuracy",
+            "r2c1": manager[0],
+            "r2c2": fraction,
+            "r2c3": percentage,
+        }
 
     print(y)
 
@@ -729,7 +745,7 @@ def main(swid, espn_s2, league_id, week):
         manager_eff = manager_effiency(league, week)
         galaxy, mike = prettyPrintManagerEff(manager_eff)
         jsonWeek["galaxyManger"] = galaxy
-        jsonWeek["mike"] = mike
+        jsonWeek["mikeZimmer"] = mike
 
         # Top Heavy
         topHeavyList = topHeavyTeams(league, week)
