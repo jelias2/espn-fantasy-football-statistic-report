@@ -14,6 +14,7 @@ import datetime
 import time
 import logging
 import pdfkit
+import json
 
 
 Weeks = {
@@ -135,7 +136,14 @@ def biggestBlowOut(league, week):
     j.align = "c"
     print(j)
 
-    return
+    ret = {
+        "team1": biggest_blowout.home_team.team_name,
+        "team2": biggest_blowout.away_team.team_name,
+        "score1": biggest_blowout.home_score,
+        "score2": biggest_blowout.away_score
+    }
+
+    return ret
 
 
 def closestGame(league, week):
@@ -164,7 +172,14 @@ def closestGame(league, week):
     j.align = "c"
     print(j)
 
-    return
+    ret = {
+        "team1": biggest_blowout.home_team.team_name,
+        "team2": biggest_blowout.away_team.team_name,
+        "score1": biggest_blowout.home_score,
+        "score2": biggest_blowout.away_score
+    }
+
+    return ret
 
 
 def biggestBenchWarmer(league, week, position):
@@ -304,12 +319,16 @@ def prettyPrintManagerEff(manager_eff):
     x.title = ' Galaxy Brain Manager'
     x.field_names = ["Team", "Output/Optimal", "% Accuracy"]
 
+    galaxyManager = {}
+    mikeZimmerManager = {}
+
     manager_eff_sorted = sorted(
         manager_eff, key=lambda manager_eff: manager_eff[3], reverse=True)
     for manager in manager_eff_sorted[:1]:
         fraction = "{0:.0f}/{1:.0f}".format(manager[1], manager[2])
         percentage = "{0:.0f}".format(manager[3] * 100)
         x.add_row([manager[0], fraction, percentage])
+        galaxyManager["msg"] = manager[0] + " " + fraction + " " + percentage
     print(x)
 
     y = PrettyTable()
@@ -322,7 +341,13 @@ def prettyPrintManagerEff(manager_eff):
         fraction = "{0:.0f}/{1:.0f}".format(manager[1], manager[2])
         percentage = "{0:.0f}".format(manager[3] * 100)
         y.add_row([manager[0], fraction, percentage])
+        mikeZimmerManager["msg"] = manager[0] + \
+            " " + fraction + " " + percentage
+
     print(y)
+
+    return (galaxyManager, mikeZimmerManager)
+
 
 # Season Long Mananger Effenciey returns -> sorted list(team_name, total_output, optimal_output, accuracy %)
 
@@ -400,6 +425,15 @@ def worstWin(league, week):
     j.align = "c"
     print(j)
 
+    ret = {
+        "team1": saved.home_team.team_name,
+        "team2": saved.away_team.team_name,
+        "score1": saved.home_score,
+        "score2": saved.away_score
+    }
+
+    return ret
+
 
 def worstLoss(league, week):
     box_scores = league.box_scores(week)
@@ -420,6 +454,15 @@ def worstLoss(league, week):
     j.add_row([saved.home_score, saved.away_score])
     j.align = "c"
     print(j)
+
+    ret = {
+        "team1": saved.home_team.team_name,
+        "team2": saved.away_team.team_name,
+        "score1": saved.home_score,
+        "score2": saved.away_score
+    }
+
+    return ret
 
 
 def startingLineupAverage(lineup):
@@ -478,6 +521,17 @@ def prettyPrintTopHeavy(topHeavyList):
                   "{:.2f}".format((team[2].points - team[1]))])
     print(j)
 
+    topHeavyList = {
+        "r1c1": "Team",
+        "r1c2": "Top Player Points",
+        "r1c3": "Team Avg",
+        "r2c1": team[0],
+        "r2c2": x,
+        "r2c3": "{:.2f}".format(team[1]),
+    }
+
+    return topHeavyList
+
 
 # Team with greatest differences between max player and team average
 def highestTeamAverageForStarters(league, week):
@@ -502,6 +556,7 @@ def highestTeamAverageForStarters(league, week):
 
 def prettyPrintHitters(hitters):
 
+    ret = {}
     j = PrettyTable()
     j.title = "Whole Team Getting Buckets"
     j.field_names = ["Team", "Avg Points Per Player"]
@@ -509,7 +564,15 @@ def prettyPrintHitters(hitters):
     for team in hitters[:1]:
         j.add_row([team[0], "{:.2f}".format(team[1])])
 
+        ret = {
+            "team1": "Team",
+            "team2": "Avg Points Per Player",
+            "score1": team[0],
+            "score2": "{:.2f}".format(team[1]),
+        }
+
     print(j)
+    return ret
 
 
 def standings(league, week):
@@ -641,40 +704,60 @@ def main(swid, espn_s2, league_id, week):
 
     ############# Final Output #################################
 
-    week = league.current_week - 1
-    print("week: ", week)
-    # Worst Win
-    worstWin(league, week)
-    # Worst Loss
-    worstLoss(league, week)
+    weeksOutput = {"weeks": []}
+    current_week = league.current_week - 1
+    for week in range(1, current_week):
+        jsonWeek = {}
+        print("week: ", week)
+        # Worst Win
+        worstWinDict = worstWin(league, week)
 
-    # Biggest Blowout
-    biggestBlowOut(league, week)
+        jsonWeek["garbageWin"] = worstWinDict
+        # Worst Loss
+        worstLossDict = worstLoss(league, week)
+        jsonWeek["goodEffortKid"] = worstLossDict
 
-    # Closest Game
-    closestGame(league, week)
+        # Biggest Blowout
+        biggestBlowoutDict = biggestBlowOut(league, week)
+        jsonWeek["biggestBlowout"] = biggestBlowoutDict
 
-    # Best and Worst Manager
-    manager_eff = manager_effiency(league, week)
-    prettyPrintManagerEff(manager_eff)
+        # Closest Game
+        closestGameDict = closestGame(league, week)
+        jsonWeek["nailBiter"] = closestGameDict
 
-    # Top Heavy
-    topHeavyList = topHeavyTeams(league, week)
-    prettyPrintTopHeavy(topHeavyList)
+        # Best and Worst Manager
+        manager_eff = manager_effiency(league, week)
+        galaxy, mike = prettyPrintManagerEff(manager_eff)
+        jsonWeek["galaxyManger"] = galaxy
+        jsonWeek["mike"] = mike
 
-    # Everyone was hitting
-    hitters = highestTeamAverageForStarters(league, week)
-    prettyPrintHitters(hitters)
+        # Top Heavy
+        topHeavyList = topHeavyTeams(league, week)
+        topHeavyDict = prettyPrintTopHeavy(topHeavyList)
+        jsonWeek['onePlayer'] = topHeavyDict
 
-    qbWarmers = biggestBenchWarmer(league, week, "QB")
-    rbWarmers = biggestBenchWarmer(league, week, "RB")
-    teWarmers = biggestBenchWarmer(league, week, "TE")
-    wrWarmers = biggestBenchWarmer(league, week, "WR")
+        # Everyone was hitting
+        hitters = highestTeamAverageForStarters(league, week)
+        wholeTeamDict = prettyPrintHitters(hitters)
+        jsonWeek['wholeTeam'] = wholeTeamDict
 
-    allWarmers = qbWarmers + rbWarmers + teWarmers + wrWarmers
-    allWarmers = sorted(allWarmers, key=lambda tup: tup[0], reverse=True)
-    prettyPrintBenchWarmers(allWarmers[:5])
-    prettyPrintTopScorers(topPlayers(league, week)[:5])
+        # qbWarmers=biggestBenchWarmer(league, week, "QB")
+        # rbWarmers=biggestBenchWarmer(league, week, "RB")
+        # teWarmers=biggestBenchWarmer(league, week, "TE")
+        # wrWarmers=biggestBenchWarmer(league, week, "WR")
+        #
+        # allWarmers=qbWarmers + rbWarmers + teWarmers + wrWarmers
+        # allWarmers=sorted(allWarmers, key=lambda tup: tup[0], reverse=True)
+        # prettyPrintBenchWarmers(allWarmers[:5])
+        # prettyPrintTopScorers(topPlayers(league, week)[:5])
+
+        weeksOutput["weeks"].append(jsonWeek)
+        print("Printing JSON Week")
+        weeksStr = json.dumps(weeksOutput)
+        print(weeksStr)
+        print("Printed JSON Week")
+
+    print(weeks)
 
     standings(league, week)
     divison_strength(league, week)
