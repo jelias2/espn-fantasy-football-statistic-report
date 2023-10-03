@@ -599,6 +599,8 @@ def prettyPrintHitters(hitters):
 
 def standings(league, week):
 
+    standingsJson = []
+
     j = PrettyTable()
     x = "JCPY FFL Week {0} Power Rankings".format(league.current_week)
     print(x)
@@ -627,10 +629,13 @@ def standings(league, week):
                                                  team.points_against)
                 moves_made = team.acquisitions + team.drops + team.trades
                 money_left = 100 - team.acquisition_budget_spent
-                j.add_row([index+1, team.team_name, record, yoff_pct, manager_iq,
-                          pf_pa, moves_made, money_left, team.division_name])
+                row = [index+1, team.team_name, record, yoff_pct, manager_iq,
+                       pf_pa, moves_made, money_left, team.division_name]
+                j.add_row(row)
+                standingsJson.append(row)
 
     print(j)
+    return standingsJson
 
 
 def divison_strength(league, week):
@@ -784,7 +789,11 @@ def main(swid, espn_s2, league_id, week):
 
     # print(weeks)
 
-    standings(league, week)
+    standingJson = standings(league, week)
+    weeksOutput["standings"] = standingJson
+    weeksStr = json.dumps(weeksOutput)
+    print(weeksStr)
+    print("Printed JSON Week")
     divison_strength(league, week)
 
     table = PrettyTable()
