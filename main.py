@@ -43,6 +43,125 @@ Weeks = {
 POSITIONS = ["QB", "WR", "TE", "RB"]
 
 
+def AnalzyeTrade(trade, league):
+
+    tradeJson = {}
+    team1, team2 = TradeGetTeams(trade)
+    # tradeDate = GetTradeDate(trade)
+    tradeWeek = TradeGetWeekBySunday(trade)
+    tradeSummary = "Wk. " + tradeWeek + " " + \
+        team2.team_name + " <-> " + team1.team_name
+    p1 = TradeGetPlayers(trade, team1)
+    p2 = TradeGetPlayers(trade, team2)
+
+    tradeJson['tradeSummary'] = tradeSummary
+    tradeJson['teams'] = [team1.team_name, team2.team_name]
+
+    tradeT = PrettyTable()
+    tradeT.title = tradeSummary
+    p_itr = 0
+    team1_players = ""
+    team2_players = ""
+    while p_itr < len(p1) or p_itr < len(p2):
+        if p_itr < len(p1) and p_itr < len(p2):
+            team1_players += playerAbbreviation(p1[p_itr].name) + " "
+            team2_players += playerAbbreviation(p2[p_itr].name) + " "
+        if p_itr < len(p1) and p_itr >= len(p2):
+            team1_players += playerAbbreviation(p1[p_itr].name) + " "
+        if p_itr >= len(p1) and p_itr < len(p2):
+            team2_players += playerAbbreviation(p2[p_itr].name) + "  "
+        p_itr = p_itr + 1
+
+    tradeT.field_names = [team1_players, team2_players]
+
+    tradeJson['players'] = [team1_players, team2_players]
+
+    total_p1_pts = 0
+    total_p2_pts = 0
+    itr = int(tradeWeek)
+    tradeJson['week'] = []
+    while itr < league.current_week:
+        print("[Debug] Week: " + str(itr))
+
+        row1 = "[Debug]["+team2.team_name+"] Week: " + str(itr) + " "
+        row2 = "[Debug]["+team1.team_name+"] Week: " + str(itr) + " "
+        week1_sum = 0
+        week2_sum = 0
+        for player in p1:
+            if itr in player.stats.keys():
+                row1 += player.name + ": " + \
+                    str(int(player.stats[itr]["points"])) + " "
+                total_p1_pts += player.stats[itr]["points"]
+                week1_sum += int(player.stats[itr]["points"])
+
+        for player in p2:
+            if itr in player.stats.keys():
+                row2 += player.name + ": " + \
+                    str(int(player.stats[itr]["points"])) + " "
+                total_p2_pts += player.stats[itr]["points"]
+                week2_sum += int(player.stats[itr]["points"])
+
+        print(row1)
+        print(row2)
+        team1_str = "Week: " + str(itr) + " " + str(int(week1_sum))
+        team2_str = "Week: " + str(itr) + " " + str(int(week2_sum))
+        tradeT.add_row([team1_str, team2_str])
+        tradeJson['week'].append(
+            [str(itr), str(int(week1_sum)), str(int(week2_sum))])
+        itr = itr + 1
+
+    p1_pts_rec = "Total Pts Rec: " + str(int(total_p1_pts))
+    p2_pts_rec = "Total Pts Rec: " + str(int(total_p2_pts))
+    tradeT.add_row([p1_pts_rec, p2_pts_rec])
+    tradeJson['pts_rec'] = [str(int(total_p1_pts)), str(int(total_p2_pts))]
+
+    p1_delta = "Delta: " + str(int(total_p1_pts - total_p2_pts))
+    p2_delta = "Delta: " + str(int(total_p2_pts - total_p1_pts))
+    tradeT.add_row([p1_delta, p2_delta])
+    tradeJson['delta'] = [
+        str(int(total_p1_pts - total_p2_pts)), str(int(total_p2_pts - total_p1_pts))]
+    tradeT.align = "c"
+
+    print(tradeT)
+
+    print(json.dumps(tradeJson))
+
+    # Calculate player average pre-trade and post trade
+    wk = 1
+    player_avgs = {}
+    while wk < league.current_week:
+        #         print("[Debug] Week: " + str(j))
+
+        for player in p1 + p2:
+            if wk in player.stats.keys():
+                if player.name not in player_avgs.keys():
+                    player_avgs[player.name] = [player.stats[wk]["points"]]
+                else:
+                    scores = player_avgs[player.name]
+                    scores.append(player.stats[wk]["points"])
+                    player_avgs[player.name] = scores
+        wk += 1
+    print("[debug] TradeWeek: " + tradeWeek +
+          " Current Week " + str(league.current_week))
+    for player in player_avgs:
+        pre_trade_scores = player_avgs[player][1:int(tradeWeek)-1]
+        pre_trade_avg = sum(pre_trade_scores)/len(pre_trade_scores)
+
+        post_trade_scores = player_avgs[player][int(
+            tradeWeek)-1:league.current_week+1]
+
+        if len(post_trade_scores) > 0:
+            post_trade_avg = sum(post_trade_scores)/len(post_trade_scores)
+
+            print("{} pre-trade avg: {} post-trade avg: {} ".format(player,
+                                                                    PrettyFloat(pre_trade_avg), PrettyFloat(post_trade_avg)))
+
+    print("            ")
+    print("            ")
+    print("            ")
+    return tradeJson
+
+
 def PrettyFloat(num):
     return "%0.2f" % num
 
@@ -731,198 +850,105 @@ def main(swid, espn_s2, league_id, week):
 
     ############# Final Output #################################
 
-    weeksOutput = {"weeks": []}
-    current_week = league.current_week
-    for week in range(1, current_week):
-        jsonWeek = {}
-        print("week: ", week)
-        # Worst Win
-        worstWinDict = worstWin(league, week)
+    # weeksOutput = {"weeks": []}
+    # current_week = league.current_week
+    # for week in range(1, current_week):
+    #     jsonWeek = {}
+    #     print("week: ", week)
+    #     # Worst Win
+    #     worstWinDict = worstWin(league, week)
 
-        jsonWeek["garbageWin"] = worstWinDict
-        # Worst Loss
-        worstLossDict = worstLoss(league, week)
-        jsonWeek["goodEffortKid"] = worstLossDict
+    #     jsonWeek["garbageWin"] = worstWinDict
+    #     # Worst Loss
+    #     worstLossDict = worstLoss(league, week)
+    #     jsonWeek["goodEffortKid"] = worstLossDict
 
-        # Biggest Blowout
-        biggestBlowoutDict = biggestBlowOut(league, week)
-        jsonWeek["biggestBlowout"] = biggestBlowoutDict
+    #     # Biggest Blowout
+    #     biggestBlowoutDict = biggestBlowOut(league, week)
+    #     jsonWeek["biggestBlowout"] = biggestBlowoutDict
 
-        # Closest Game
-        closestGameDict = closestGame(league, week)
-        jsonWeek["nailBiter"] = closestGameDict
+    #     # Closest Game
+    #     closestGameDict = closestGame(league, week)
+    #     jsonWeek["nailBiter"] = closestGameDict
 
-        # Best and Worst Manager
-        manager_eff = manager_effiency(league, week)
-        galaxy, mike = prettyPrintManagerEff(manager_eff)
-        jsonWeek["galaxyManger"] = galaxy
-        jsonWeek["mikeZimmer"] = mike
+    #     # Best and Worst Manager
+    #     manager_eff = manager_effiency(league, week)
+    #     galaxy, mike = prettyPrintManagerEff(manager_eff)
+    #     jsonWeek["galaxyManger"] = galaxy
+    #     jsonWeek["mikeZimmer"] = mike
 
-        # Top Heavy
-        topHeavyList = topHeavyTeams(league, week)
-        topHeavyDict = prettyPrintTopHeavy(topHeavyList)
-        jsonWeek['onePlayer'] = topHeavyDict
+    #     # Top Heavy
+    #     topHeavyList = topHeavyTeams(league, week)
+    #     topHeavyDict = prettyPrintTopHeavy(topHeavyList)
+    #     jsonWeek['onePlayer'] = topHeavyDict
 
-        # Everyone was hitting
-        hitters = highestTeamAverageForStarters(league, week)
-        wholeTeamDict = prettyPrintHitters(hitters)
-        jsonWeek['wholeTeam'] = wholeTeamDict
+    #     # Everyone was hitting
+    #     hitters = highestTeamAverageForStarters(league, week)
+    #     wholeTeamDict = prettyPrintHitters(hitters)
+    #     jsonWeek['wholeTeam'] = wholeTeamDict
 
-        qbWarmers = biggestBenchWarmer(league, week, "QB")
-        rbWarmers = biggestBenchWarmer(league, week, "RB")
-        teWarmers = biggestBenchWarmer(league, week, "TE")
-        wrWarmers = biggestBenchWarmer(league, week, "WR")
+    #     qbWarmers = biggestBenchWarmer(league, week, "QB")
+    #     rbWarmers = biggestBenchWarmer(league, week, "RB")
+    #     teWarmers = biggestBenchWarmer(league, week, "TE")
+    #     wrWarmers = biggestBenchWarmer(league, week, "WR")
 
-        allWarmers = qbWarmers + rbWarmers + teWarmers + wrWarmers
-        allWarmers = sorted(allWarmers, key=lambda tup: tup[0], reverse=True)
-        # print("All Warmers: ", allWarmers)
-        benchWarmers = prettyPrintBenchWarmers(allWarmers[:5])
-        jsonWeek["benchWarmers"] = benchWarmers
-        topScorers = prettyPrintTopScorers(topPlayers(league, week)[:5])
-        jsonWeek["topScorers"] = topScorers
+    #     allWarmers = qbWarmers + rbWarmers + teWarmers + wrWarmers
+    #     allWarmers = sorted(allWarmers, key=lambda tup: tup[0], reverse=True)
+    #     # print("All Warmers: ", allWarmers)
+    #     benchWarmers = prettyPrintBenchWarmers(allWarmers[:5])
+    #     jsonWeek["benchWarmers"] = benchWarmers
+    #     topScorers = prettyPrintTopScorers(topPlayers(league, week)[:5])
+    #     jsonWeek["topScorers"] = topScorers
 
-        weeksOutput["weeks"].append(jsonWeek)
-        print("Printing JSON Week")
-        weeksStr = json.dumps(weeksOutput)
-        print(weeksStr)
-        print("Printed JSON Week")
+    #     weeksOutput["weeks"].append(jsonWeek)
+    #     print("Printing JSON Week")
+    #     weeksStr = json.dumps(weeksOutput)
+    #     print(weeksStr)
+    #     print("Printed JSON Week")
 
-    # print(weeks)
+    # # print(weeks)
 
-    standingJson = standings(league, week)
-    weeksOutput["standings"] = standingJson
-    weeksStr = json.dumps(weeksOutput)
-    print(weeksStr)
-    print("Printed JSON Week")
-    divison_strength(league, week)
+    # standingJson = standings(league, week)
+    # weeksOutput["standings"] = standingJson
+    # weeksStr = json.dumps(weeksOutput)
+    # print(weeksStr)
+    # print("Printed JSON Week")
+    # divison_strength(league, week)
 
-    table = PrettyTable()
-    table.title = "Schedule Swap"
-    table.hrules = True
-    team_name_header = [" "]
-    for i in range(len(league.teams)):
-        team_name_header.append(league.teams[i].team_name)
-    # print("team_name_header: ", team_name_header)
+    # table = PrettyTable()
+    # table.title = "Schedule Swap"
+    # table.hrules = True
+    # team_name_header = [" "]
+    # for i in range(len(league.teams)):
+    #     team_name_header.append(league.teams[i].team_name)
+    # # print("team_name_header: ", team_name_header)
 
-    table.field_names = team_name_header
+    # table.field_names = team_name_header
 
-    big_d = scheduleSwap(league)
-    # Iterate through all the team
-    for t1 in range(len(league.teams)):
-        sched = []
-        # Iterate through the headers of the table
-        for t2 in table.field_names:
-            # If the header is empty (first col), append t1 name
-            if t2 == " ":
-                sched.append(league.teams[t1].team_name)
-            # Else append the lookup of [t1][t1], create each row
-            else:
-                record = big_d[league.teams[t1].team_name][t2]
-                y = "{0}-{1}-{2}".format(record[0], record[1], record[2])
-                sched.append(y)
-        # Add the row
-        table.add_row(sched)
-    # print(big_d)
-    print(table)
+    # big_d = scheduleSwap(league)
+    # # Iterate through all the team
+    # for t1 in range(len(league.teams)):
+    #     sched = []
+    #     # Iterate through the headers of the table
+    #     for t2 in table.field_names:
+    #         # If the header is empty (first col), append t1 name
+    #         if t2 == " ":
+    #             sched.append(league.teams[t1].team_name)
+    #         # Else append the lookup of [t1][t1], create each row
+    #         else:
+    #             record = big_d[league.teams[t1].team_name][t2]
+    #             y = "{0}-{1}-{2}".format(record[0], record[1], record[2])
+    #             sched.append(y)
+    #     # Add the row
+    #     table.add_row(sched)
+    # # print(big_d)
+    # print(table)
 
+    trades = []
     for trade in GetTradeActivities(league):
+        trades.append(AnalzyeTrade(trade, league))
 
-        team1, team2 = TradeGetTeams(trade)
-        # tradeDate = GetTradeDate(trade)
-        tradeWeek = TradeGetWeekBySunday(trade)
-        tradeSummary = "Wk. " + tradeWeek + " " + \
-            team2.team_name + " <-> " + team1.team_name
-        p1 = TradeGetPlayers(trade, team1)
-        p2 = TradeGetPlayers(trade, team2)
-
-        tradeT = PrettyTable()
-        tradeT.title = tradeSummary
-        p_itr = 0
-        team1_players = ""
-        team2_players = ""
-        while p_itr < len(p1) or p_itr < len(p2):
-            if p_itr < len(p1) and p_itr < len(p2):
-                team1_players += playerAbbreviation(p1[p_itr].name) + " "
-                team2_players += playerAbbreviation(p2[p_itr].name) + " "
-            if p_itr < len(p1) and p_itr >= len(p2):
-                team1_players += playerAbbreviation(p1[p_itr].name) + " "
-            if p_itr >= len(p1) and p_itr < len(p2):
-                team2_players += playerAbbreviation(p2[p_itr].name) + "  "
-            p_itr = p_itr + 1
-
-        tradeT.field_names = [team1_players, team2_players]
-
-        total_p1_pts = 0
-        total_p2_pts = 0
-        itr = int(tradeWeek)
-        while itr < league.current_week:
-            print("[Debug] Week: " + str(itr))
-
-            row1 = "[Debug]["+team2.team_name+"] Week: " + str(itr) + " "
-            row2 = "[Debug]["+team1.team_name+"] Week: " + str(itr) + " "
-            week1_sum = 0
-            week2_sum = 0
-            for player in p1:
-                if itr in player.stats.keys():
-                    row1 += player.name + ": " + \
-                        str(int(player.stats[itr]["points"])) + " "
-                    total_p1_pts += player.stats[itr]["points"]
-                    week1_sum += int(player.stats[itr]["points"])
-
-            for player in p2:
-                if itr in player.stats.keys():
-                    row2 += player.name + ": " + \
-                        str(int(player.stats[itr]["points"])) + " "
-                    total_p2_pts += player.stats[itr]["points"]
-                    week2_sum += int(player.stats[itr]["points"])
-
-            print(row1)
-            print(row2)
-            tradeT.add_row(["Week: " + str(itr) + " " + str(int(week1_sum)),
-                           "Week: " + str(itr) + " " + str(int(week2_sum))])
-            itr = itr + 1
-        tradeT.add_row(["Total Pts Rec: " + str(int(total_p1_pts)),
-                       "Total Pts Rec: " + str(int(total_p2_pts))])
-        tradeT.add_row(["Delta: " + str(int(total_p1_pts - total_p2_pts)),
-                       "Delta: " + str(int(total_p2_pts - total_p1_pts))])
-
-        tradeT.align = "c"
-
-        print(tradeT)
-
-        # Calculate player average pre-trade and post trade
-        wk = 1
-        player_avgs = {}
-        while wk < league.current_week:
-            #         print("[Debug] Week: " + str(j))
-
-            for player in p1 + p2:
-                if wk in player.stats.keys():
-                    if player.name not in player_avgs.keys():
-                        player_avgs[player.name] = [player.stats[wk]["points"]]
-                    else:
-                        scores = player_avgs[player.name]
-                        scores.append(player.stats[wk]["points"])
-                        player_avgs[player.name] = scores
-            wk += 1
-        print("TradeWeek: " + tradeWeek +
-              " Current Week " + str(league.current_week))
-        for player in player_avgs:
-            pre_trade_scores = player_avgs[player][1:int(tradeWeek)-1]
-            pre_trade_avg = sum(pre_trade_scores)/len(pre_trade_scores)
-
-            post_trade_scores = player_avgs[player][int(
-                tradeWeek)-1:league.current_week+1]
-
-            if len(post_trade_scores) > 0:
-                post_trade_avg = sum(post_trade_scores)/len(post_trade_scores)
-
-                print("{} pre-trade avg: {} post-trade avg: {} ".format(player,
-                      PrettyFloat(pre_trade_avg), PrettyFloat(post_trade_avg)))
-
-        print("            ")
-        print("            ")
-        print("            ")
+    print(json.dumps(trades))
 
 
 if __name__ == "__main__":
