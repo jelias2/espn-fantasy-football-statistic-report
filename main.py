@@ -90,14 +90,14 @@ def AnalzyeTrade(trade, league):
         for player in p1:
             if itr in player.stats.keys():
                 row1 += player.name + ": " + \
-                    str(int(player.stats[itr]["points"])) + " "
+                    str(player.stats[itr]["points"]) + " "
                 total_p1_pts += player.stats[itr]["points"]
                 week1_sum += int(player.stats[itr]["points"])
 
         for player in p2:
             if itr in player.stats.keys():
                 row2 += player.name + ": " + \
-                    str(int(player.stats[itr]["points"])) + " "
+                    str(player.stats[itr]["points"]) + " "
                 total_p2_pts += player.stats[itr]["points"]
                 week2_sum += int(player.stats[itr]["points"])
 
@@ -106,17 +106,18 @@ def AnalzyeTrade(trade, league):
         team1_str = "Week: " + str(itr) + " " + str(int(week1_sum))
         team2_str = "Week: " + str(itr) + " " + str(int(week2_sum))
         tradeT.add_row([team1_str, team2_str])
+        itr = itr + 1
         tradeJson['week'].append(
             [str(itr), str(int(week1_sum)), str(int(week2_sum))])
-        itr = itr + 1
 
     p1_pts_rec = "Total Pts Rec: " + str(int(total_p1_pts))
     p2_pts_rec = "Total Pts Rec: " + str(int(total_p2_pts))
     tradeT.add_row([p1_pts_rec, p2_pts_rec])
-    tradeJson['pts_rec'] = [str(int(total_p1_pts)), str(int(total_p2_pts))]
+    tradeJson['pts_rec'] = [
+        str(int(total_p1_pts)), str(int(total_p2_pts))]
 
-    p1_delta = "Delta: " + str(int(total_p1_pts - total_p2_pts))
-    p2_delta = "Delta: " + str(int(total_p2_pts - total_p1_pts))
+    p1_delta = "Delta: " + str(total_p1_pts - total_p2_pts)
+    p2_delta = "Delta: " + str(total_p2_pts - total_p1_pts)
     tradeT.add_row([p1_delta, p2_delta])
     tradeJson['delta'] = [
         str(int(total_p1_pts - total_p2_pts)), str(int(total_p2_pts - total_p1_pts))]
