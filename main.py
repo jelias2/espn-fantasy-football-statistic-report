@@ -850,70 +850,67 @@ def main(swid, espn_s2, league_id, week):
 
     ############# Final Output #################################
 
-    # weeksOutput = {"weeks": []}
-    # current_week = league.current_week
-    # for week in range(1, current_week):
-    #     jsonWeek = {}
-    #     print("week: ", week)
-    #     # Worst Win
-    #     worstWinDict = worstWin(league, week)
+    weeksOutput = {"weeks": []}
+    current_week = league.current_week
+    for week in range(1, current_week):
+        jsonWeek = {}
+        print("week: ", week)
+        # Worst Win
+        worstWinDict = worstWin(league, week)
 
-    #     jsonWeek["garbageWin"] = worstWinDict
-    #     # Worst Loss
-    #     worstLossDict = worstLoss(league, week)
-    #     jsonWeek["goodEffortKid"] = worstLossDict
+        jsonWeek["garbageWin"] = worstWinDict
+        # Worst Loss
+        worstLossDict = worstLoss(league, week)
+        jsonWeek["goodEffortKid"] = worstLossDict
 
-    #     # Biggest Blowout
-    #     biggestBlowoutDict = biggestBlowOut(league, week)
-    #     jsonWeek["biggestBlowout"] = biggestBlowoutDict
+        # Biggest Blowout
+        biggestBlowoutDict = biggestBlowOut(league, week)
+        jsonWeek["biggestBlowout"] = biggestBlowoutDict
 
-    #     # Closest Game
-    #     closestGameDict = closestGame(league, week)
-    #     jsonWeek["nailBiter"] = closestGameDict
+        # Closest Game
+        closestGameDict = closestGame(league, week)
+        jsonWeek["nailBiter"] = closestGameDict
 
-    #     # Best and Worst Manager
-    #     manager_eff = manager_effiency(league, week)
-    #     galaxy, mike = prettyPrintManagerEff(manager_eff)
-    #     jsonWeek["galaxyManger"] = galaxy
-    #     jsonWeek["mikeZimmer"] = mike
+        # Best and Worst Manager
+        manager_eff = manager_effiency(league, week)
+        galaxy, mike = prettyPrintManagerEff(manager_eff)
+        jsonWeek["galaxyManger"] = galaxy
+        jsonWeek["mikeZimmer"] = mike
 
-    #     # Top Heavy
-    #     topHeavyList = topHeavyTeams(league, week)
-    #     topHeavyDict = prettyPrintTopHeavy(topHeavyList)
-    #     jsonWeek['onePlayer'] = topHeavyDict
+        # Top Heavy
+        topHeavyList = topHeavyTeams(league, week)
+        topHeavyDict = prettyPrintTopHeavy(topHeavyList)
+        jsonWeek['onePlayer'] = topHeavyDict
 
-    #     # Everyone was hitting
-    #     hitters = highestTeamAverageForStarters(league, week)
-    #     wholeTeamDict = prettyPrintHitters(hitters)
-    #     jsonWeek['wholeTeam'] = wholeTeamDict
+        # Everyone was hitting
+        hitters = highestTeamAverageForStarters(league, week)
+        wholeTeamDict = prettyPrintHitters(hitters)
+        jsonWeek['wholeTeam'] = wholeTeamDict
 
-    #     qbWarmers = biggestBenchWarmer(league, week, "QB")
-    #     rbWarmers = biggestBenchWarmer(league, week, "RB")
-    #     teWarmers = biggestBenchWarmer(league, week, "TE")
-    #     wrWarmers = biggestBenchWarmer(league, week, "WR")
+        qbWarmers = biggestBenchWarmer(league, week, "QB")
+        rbWarmers = biggestBenchWarmer(league, week, "RB")
+        teWarmers = biggestBenchWarmer(league, week, "TE")
+        wrWarmers = biggestBenchWarmer(league, week, "WR")
 
-    #     allWarmers = qbWarmers + rbWarmers + teWarmers + wrWarmers
-    #     allWarmers = sorted(allWarmers, key=lambda tup: tup[0], reverse=True)
-    #     # print("All Warmers: ", allWarmers)
-    #     benchWarmers = prettyPrintBenchWarmers(allWarmers[:5])
-    #     jsonWeek["benchWarmers"] = benchWarmers
-    #     topScorers = prettyPrintTopScorers(topPlayers(league, week)[:5])
-    #     jsonWeek["topScorers"] = topScorers
+        allWarmers = qbWarmers + rbWarmers + teWarmers + wrWarmers
+        allWarmers = sorted(allWarmers, key=lambda tup: tup[0], reverse=True)
+        # print("All Warmers: ", allWarmers)
+        benchWarmers = prettyPrintBenchWarmers(allWarmers[:5])
+        jsonWeek["benchWarmers"] = benchWarmers
+        topScorers = prettyPrintTopScorers(topPlayers(league, week)[:5])
+        jsonWeek["topScorers"] = topScorers
 
-    #     weeksOutput["weeks"].append(jsonWeek)
-    #     print("Printing JSON Week")
-    #     weeksStr = json.dumps(weeksOutput)
-    #     print(weeksStr)
-    #     print("Printed JSON Week")
+        weeksOutput["weeks"].append(jsonWeek)
+        print("Printing JSON Week")
+        weeksStr = json.dumps(weeksOutput)
+        print(weeksStr)
+        print("Printed JSON Week")
 
-    # # print(weeks)
+    # print(weeks)
 
-    # standingJson = standings(league, week)
-    # weeksOutput["standings"] = standingJson
-    # weeksStr = json.dumps(weeksOutput)
-    # print(weeksStr)
-    # print("Printed JSON Week")
-    # divison_strength(league, week)
+    standingJson = standings(league, week)
+    weeksOutput["standings"] = standingJson
+    divison_strength(league, week)
 
     # table = PrettyTable()
     # table.title = "Schedule Swap"
@@ -946,9 +943,13 @@ def main(swid, espn_s2, league_id, week):
 
     trades = []
     for trade in GetTradeActivities(league):
-        trades.append(AnalzyeTrade(trade, league))
+        tradeResult = AnalzyeTrade(trade, league)
+        trades.append(tradeResult)
 
-    print(json.dumps(trades))
+    weeksOutput["trades"] = trades
+    weeksStr = json.dumps(weeksOutput)
+    print(weeksStr)
+    print("Printed JSON Week")
 
 
 if __name__ == "__main__":
