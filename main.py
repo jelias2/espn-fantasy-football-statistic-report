@@ -146,7 +146,9 @@ def AnalzyeTrade(trade, league):
           " Current Week " + str(league.current_week))
     for player in player_avgs:
         pre_trade_scores = player_avgs[player][1:int(tradeWeek)-1]
-        pre_trade_avg = sum(pre_trade_scores)/len(pre_trade_scores)
+        pre_trade_avg = 0
+        if len(pre_trade_scores) > 0:
+            pre_trade_avg = sum(pre_trade_scores)/len(pre_trade_scores)
 
         post_trade_scores = player_avgs[player][int(
             tradeWeek)-1:league.current_week+1]
